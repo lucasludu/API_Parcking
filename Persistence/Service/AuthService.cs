@@ -1,11 +1,15 @@
-﻿using Application.Interfaces;
+﻿using Application.Constants;
+using Application.Interfaces;
 using Application.Wrappers;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Models.Request._user;
 using Models.Response._user;
+using Persistence.Contexts;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,17 +20,52 @@ namespace Persistence.Service
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public AuthService ( 
-                UserManager<ApplicationUser> userManager, 
-                RoleManager<ApplicationRole> roleManager, 
-                IConfiguration configuration
-            )
+        public AuthService(
+                UserManager<ApplicationUser> userManager,
+                RoleManager<ApplicationRole> roleManager,
+                IConfiguration configuration,
+                ApplicationDbContext dbContext,
+                IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _dbContext = dbContext;
+            _emailService = emailService;
+        }
+
+        public async Task<Response<string>> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return Response<string>.Fail("Usuario no encontrado.");
+
+            try
+            {
+                // 1. Decodificar el token de forma segura
+                var decodedBytes = WebEncoders.Base64UrlDecode(token);
+                var decodedToken = Encoding.UTF8.GetString(decodedBytes);
+
+                // 2. Confirmar con Identity
+                var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+                if (!result.Succeeded)
+                    return Response<string>.Fail(result.Errors.Select(e => e.Description).ToList());
+
+                return Response<string>.Success(user.Id, "Email confirmado exitosamente.");
+            }
+            catch (FormatException)
+            {
+                // Capturamos el error específico de Base64
+                return Response<string>.Fail("El token de confirmación es inválido o está corrupto.");
+            }
+            catch (Exception ex)
+            {
+                return Response<string>.Fail($"Error al confirmar email: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -38,19 +77,23 @@ namespace Persistence.Service
         public async Task<Response<LoginResponse>> LoginUserAsync(AuthLoginRequest request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email!);
-            
+
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password!))
                 return Response<LoginResponse>.Fail("Usuario o contraseña incorrectos.");
-            
+
             var roles = await _userManager.GetRolesAsync(user!);
             var rol = roles.FirstOrDefault();
 
             var token = await GenerateJwtTokenAsync(user);
 
             return new Response<LoginResponse>(
-                    new LoginResponse { Token = token , UserId = user.Id, Rol = rol! },
-                    $"Usuario {user.UserName} logueado correctamente."
-                );
+            new LoginResponse
+            {
+                Token = token,
+                UserId = user.Id,
+                Roles = roles.ToList()
+            },
+            $"Usuario {user.UserName} logueado correctamente.");
         }
 
         /// <summary>
@@ -61,32 +104,103 @@ namespace Persistence.Service
         /// <returns></returns>
         public async Task<Response<ApplicationUser>> RegisterUserAsync(RegisterUserRequest request, CancellationToken cancellationToken)
         {
-            // Check if the user already exists
+            // 1. Validar que no exista el email
             var existingUser = await _userManager.FindByEmailAsync(request.Email!);
-            if(existingUser != null)
+            if (existingUser != null)
                 return Response<ApplicationUser>.Fail("El correo electrónico ya está en uso.");
 
-            // Create the user
-            var user = CreateUserFromRequest(request);
-            var result = await _userManager.CreateAsync(user, request.Password!);
-            if (!result.Succeeded)
-            {
-                return Response<ApplicationUser>.Fail (
-                    result.Errors.Select(r => r.Description).ToList(), 
-                    $"No se pudo crear el usuario {user.UserName}"
-                );
-            }
+            // 2. Iniciar Transacción
+            using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            // Assign the role to the user
-            var roleResult = await EnsureRoleAndAssignAsync(user, request.Role!);
-            if (!roleResult.Succeeded)
+            try
             {
-                return Response<ApplicationUser>.Fail(
-                    roleResult.Errors.Select(e => e.Description).ToList(),
-                    "No se pudo asignar el rol al usuario.");
-            }
+                // A. Crear el Usuario
+                var user = new ApplicationUser
+                {
+                    UserName = request.UserName,
+                    Email = request.Email,
+                    // Todavía no asignamos CocheraId
+                };
 
-            return Response<ApplicationUser>.Success(user);
+                var result = await _userManager.CreateAsync(user, request.Password!);
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Response<ApplicationUser>.Fail(result.Errors.Select(r => r.Description).ToList());
+                }
+
+                // B. Determinar Rol y Lógica de Cochera
+                string rolAsignar = RolesConstants.Usuario; // Por defecto
+
+                // CASO 1: Es Dueño (Envió datos de nueva cochera)
+                if (!string.IsNullOrEmpty(request.NombreCochera))
+                {
+                    rolAsignar = RolesConstants.Admin; // O "Owner" si creas ese rol
+
+                    var nuevaCochera = new Cochera
+                    {
+                        Nombre = request.NombreCochera,
+                        Direccion = request.DireccionCochera!,
+                        CapacidadTotal = request.CapacidadCochera ?? 0,
+                        OwnerId = user.Id, // Vinculamos al dueño
+                        ImagenUrl = "default_garage.png", // Valor por defecto
+                        Created = DateTime.UtcNow,
+                        IsActive = true
+                    };
+
+                    await _dbContext.Cocheras.AddAsync(nuevaCochera, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken); // Guardar para obtener el ID
+
+                    // Actualizar usuario con la nueva cochera
+                    user.CocheraId = nuevaCochera.Id;
+                    await _userManager.UpdateAsync(user);
+                }
+                // CASO 2: Es Empleado (Envió ID de cochera existente)
+                else if (request.CocheraIdExistente.HasValue)
+                {
+                    // Verificar que la cochera exista
+                    var cocheraExiste = await _dbContext.Cocheras.AnyAsync(c => c.Id == request.CocheraIdExistente.Value, cancellationToken);
+                    if (!cocheraExiste)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        return Response<ApplicationUser>.Fail("La cochera especificada no existe.");
+                    }
+
+                    user.CocheraId = request.CocheraIdExistente.Value;
+                    await _userManager.UpdateAsync(user);
+                }
+
+                // C. Asignar Rol
+                if (!await _roleManager.RoleExistsAsync(rolAsignar))
+                {
+                    await _roleManager.CreateAsync(new ApplicationRole { Name = rolAsignar });
+                }
+                await _userManager.AddToRoleAsync(user, rolAsignar);
+
+                // D. Confirmación de Email
+                // Generamos el token único de Identity
+                var verificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                // Lo codificamos para que pueda viajar seguro en una URL
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
+
+                // Construimos la URL (ajusta localhost al puerto de tu API)
+                var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+                // Enviamos el correo (Mock o Real)
+                await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",
+                    $"<h1>Bienvenido {user.UserName}</h1><p>Confirma tu cuenta haciendo <a href='{url}'>clic aquí</a></p>");
+
+                // E. COMMIT FINAL
+                // Si llegamos hasta aquí, todo salió bien. Guardamos los cambios definitivamente.
+                await transaction.CommitAsync(cancellationToken);
+
+                return Response<ApplicationUser>.Success(user, $"Usuario registrado exitosamente como {rolAsignar}. Revisa tu correo para activar la cuenta.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Response<ApplicationUser>.Fail($"Error en el servidor: {ex.Message}");
+            }
         }
 
 
@@ -122,38 +236,6 @@ namespace Persistence.Service
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        /// <summary>
-        /// Create a new user from the registration request.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private ApplicationUser CreateUserFromRequest(RegisterUserRequest request)
-        {
-            return new ApplicationUser
-            {
-                UserName = request.UserName!,
-                Email = request.Email!,
-                CocheraId = request.CocheraId,
-            };
-        }
-
-        /// <summary>
-        /// Ensure the role exists and assign it to the user.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        private async Task<IdentityResult> EnsureRoleAndAssignAsync(ApplicationUser user, string role)
-        {
-            if (!await _roleManager.RoleExistsAsync(role))
-            {
-                var createRoleResult = await _roleManager.CreateAsync(new ApplicationRole { Name = role });
-                if (!createRoleResult.Succeeded)
-                    return createRoleResult;
-            }
-            return await _userManager.AddToRoleAsync(user, role);
         }
 
         #endregion

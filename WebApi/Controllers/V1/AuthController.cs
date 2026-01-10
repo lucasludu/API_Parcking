@@ -1,5 +1,7 @@
-﻿using Application.Features._auth.Commands.LoginCommands;
+﻿using Application.Features._auth.Commands.ConfirmEmailCommands;
+using Application.Features._auth.Commands.LoginCommands;
 using Application.Features._auth.Commands.RegisterUserCommands;
+using Application.Wrappers;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._user;
@@ -33,6 +35,20 @@ namespace WebApi.Controllers.V1
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
         {
             var result = await Mediator.Send(new RegisterUserCommand(request));
+
+            return (!result.Succeeded)
+                ? BadRequest(result)
+                : Ok(result);
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            // Validamos que vengan los datos
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                return BadRequest(new Response<string>("Parámetros inválidos para confirmación."));
+
+            var result = await Mediator.Send(new ConfirmEmailCommand(userId, token));
 
             return (!result.Succeeded)
                 ? BadRequest(result)

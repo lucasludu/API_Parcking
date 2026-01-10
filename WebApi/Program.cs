@@ -1,6 +1,5 @@
 ﻿using Application;
 using Persistence;
-using Persistence.Seed;
 using Shared;
 using WebApi.Extensions;
 using WebApi.Middleware;
@@ -18,13 +17,6 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await IdentitySeed.SeedAsync(services, builder.Configuration);
-}
-
-// Middleware para redirigir "/" a "/swagger" sin generar un endpoint visible en Swagger
 app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/")

@@ -1,5 +1,4 @@
-﻿using Application.Constants;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Application.Features._auth.Commands.RegisterUserCommands
 {
@@ -7,31 +6,29 @@ namespace Application.Features._auth.Commands.RegisterUserCommands
     {
         public RegisterUserValidator()
         {
+            // Validaciones de Usuario (igual que antes)
             RuleFor(p => p.Request.UserName)
-                .NotEmpty().WithMessage("{PropertyName} no puede estar vacio.")
-                .MaximumLength(80).WithMessage("{PropertyName} no puede exceder de {MaxLengh} caracteres");
+                .NotEmpty().WithMessage("{PropertyName} no puede estar vacío.")
+                .MaximumLength(80);
 
             RuleFor(p => p.Request.Email)
-               .NotEmpty().WithMessage("{PropertyName} no puede estar vacio.")
-               .EmailAddress().WithMessage("{PropertyName} debe ser una direccion de email valida")
-               .MaximumLength(100).WithMessage("{PropertyName} no puede exceder de {MaxLengh} caracteres");
+               .NotEmpty().EmailAddress().MaximumLength(100);
 
             RuleFor(p => p.Request.Password)
-                .NotEmpty().WithMessage("{PropertyName} no puede estar vacio.")
-                .MaximumLength(80).WithMessage("{PropertyName} no puede exceder de {MaxLengh} caracteres");
+                .NotEmpty().MaximumLength(80);
 
             RuleFor(p => p.Request.ConfirmPassword)
-                .NotEmpty().WithMessage("{PropertyName} no puede estar vacio.")
-                .MaximumLength(80).WithMessage("{PropertyName} no puede exceder de {MaxLengh} caracteres")
-                .Equal(p => p.Request.Password).WithMessage("{PropertyName} debe ser igual a Password.");
+                .Equal(p => p.Request.Password).WithMessage("Las contraseñas no coinciden.");
 
-            var rolesPattern = $"^({string.Join("|", RolesConstants.ValidRoles)})$";
-
-            RuleFor(x => x.Request.Role)
-                .NotEmpty().WithMessage("El rol es requerido.")
-                .Matches(rolesPattern)
-                .WithMessage($"El rol debe ser uno de los siguientes: {string.Join(", ", RolesConstants.ValidRoles)}");
-
+            // Validaciones Condicionales para Cochera
+            // Si ingreso NombreCochera, asumo que quiero crear una y valido el resto
+            When(x => !string.IsNullOrEmpty(x.Request.NombreCochera), () =>
+            {
+                RuleFor(x => x.Request.DireccionCochera)
+                    .NotEmpty().WithMessage("La dirección es obligatoria si registras una cochera.");
+                RuleFor(x => x.Request.CapacidadCochera)
+                    .GreaterThan(0).WithMessage("La capacidad debe ser mayor a 0.");
+            });
         }
     }
 }

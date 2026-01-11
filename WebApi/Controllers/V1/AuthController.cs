@@ -1,8 +1,9 @@
 ﻿using Application.Features._auth.Commands.ConfirmEmailCommands;
+using Application.Features._auth.Commands.ForgotPasswordCommands;
 using Application.Features._auth.Commands.LoginCommands;
 using Application.Features._auth.Commands.RegisterUserCommands;
+using Application.Features._auth.Commands.ResetPasswordCommands;
 using Application.Wrappers;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._user;
 
@@ -41,6 +42,12 @@ namespace WebApi.Controllers.V1
                 : Ok(result);
         }
 
+        /// <summary>
+        /// Confirm email of a user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
@@ -53,6 +60,36 @@ namespace WebApi.Controllers.V1
             return (!result.Succeeded)
                 ? BadRequest(result)
                 : Ok(result);
+        }
+
+        /// <summary>
+        /// Forgot password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var result = await Mediator.Send(new ForgotPasswordCommand(request));
+            
+            return result.Succeeded 
+                ? Ok(result) 
+                : BadRequest(result);
+        }
+
+        /// <summary>
+        /// Reset password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var result = await Mediator.Send(new ResetPasswordCommand(request));
+           
+            return result.Succeeded 
+                ? Ok(result) 
+                : BadRequest(result);
         }
     }
 }

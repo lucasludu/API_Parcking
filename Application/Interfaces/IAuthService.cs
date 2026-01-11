@@ -10,6 +10,8 @@ namespace Application.Interfaces
         Task<Response<ApplicationUser>> RegisterUserAsync(RegisterUserRequest request, CancellationToken cancellationToken);
         Task<Response<LoginResponse>> LoginUserAsync(AuthLoginRequest request, CancellationToken cancellationToken);
         Task<Response<string>> ConfirmEmailAsync(string userId, string token);
+        Task<Response<string>> ForgotPasswordAsync(ForgotPasswordRequest request);
+        Task<Response<string>> ResetPasswordAsync(ResetPasswordRequest request);
 
     }
 }

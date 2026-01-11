@@ -38,6 +38,12 @@ namespace Persistence.Service
             _emailService = emailService;
         }
 
+        /// <summary>
+        /// Confirmar el email de un usuario.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<Response<string>> ConfirmEmailAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -69,6 +75,41 @@ namespace Persistence.Service
         }
 
         /// <summary>
+        /// Obtener el token para restablecer la contraseña y enviarlo por correo.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<Response<string>> ForgotPasswordAsync(ForgotPasswordRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            // Por seguridad, no revelamos si el usuario existe o no.
+            // Si no existe, simplemente retornamos éxito falso (o verdadero, según prefieras para evitar enumeración de usuarios).
+            // Aquí seremos transparentes para desarrollo:
+            if (user == null)
+                return Response<string>.Fail("No existe ningún usuario asociado a este correo.");
+
+            // Generar Token de Reset Password
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Codificar Token (Importante para URL)
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            // Construir URL (Apunta a tu Frontend o a un endpoint de prueba)
+            // Nota: El frontend debe tener una pantalla que capture el token de la URL y muestre el formulario de nueva contraseña.
+            var url = $"https://localhost:7042/api/v1/Auth/reset-password?email={request.Email}&token={encodedToken}"; // O URL del Frontend
+
+            // Enviar Correo
+            await _emailService.SendEmailAsync(request.Email, "Restablecer Contraseña",
+                $"<h1>Recuperar Contraseña</h1>" +
+                $"<p>Para restablecer tu contraseña, copia el siguiente token:</p>" +
+                $"<p><strong>{encodedToken}</strong></p>" +
+                $"<p>O haz clic <a href='{url}'>aquí</a> (Solo si es GET, para POST mejor copiar token).</p>");
+
+            return Response<string>.Success(user.Id, $"Se ha enviado un correo a {request.Email} con las instrucciones.");
+        }
+
+        /// <summary>
         /// Login a user and generate a JWT token.
         /// </summary>
         /// <param name="request"></param>
@@ -80,6 +121,9 @@ namespace Persistence.Service
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password!))
                 return Response<LoginResponse>.Fail("Usuario o contraseña incorrectos.");
+
+            if (!user.EmailConfirmed)
+                return Response<LoginResponse>.Fail("El correo electrónico no ha sido confirmado.");
 
             var roles = await _userManager.GetRolesAsync(user!);
             var rol = roles.FirstOrDefault();
@@ -200,6 +244,36 @@ namespace Persistence.Service
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return Response<ApplicationUser>.Fail($"Error en el servidor: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Restablecer la contraseña de un usuario.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<Response<string>> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+                return Response<string>.Fail("Usuario no encontrado.");
+
+            try
+            {
+                // Decodificar Token
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+
+                // Ejecutar cambio de contraseña
+                var result = await _userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
+
+                if (!result.Succeeded)
+                    return Response<string>.Fail(result.Errors.Select(e => e.Description).ToList());
+
+                return Response<string>.Success(user.Id, "Contraseña restablecida exitosamente.");
+            }
+            catch (FormatException)
+            {
+                return Response<string>.Fail("Token inválido o corrupto.");
             }
         }
 

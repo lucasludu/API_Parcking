@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Services;
+using Shared.Settings;
 
 namespace Shared
 {
@@ -11,6 +12,7 @@ namespace Shared
         {
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<IEmailService, EmailService>();
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
         }
     }
 }

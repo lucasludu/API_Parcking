@@ -9,9 +9,10 @@ namespace WebApi.Extensions
         {
             services.AddSwaggerGen(variable =>
             {
+                // 1. Common "All" Doc
                 variable.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "API_Universidad",
+                    Title = "API Completa",
                     Description = "Sistema Universitario",
                     Version = "v1",
                     Contact = new OpenApiContact
@@ -25,6 +26,21 @@ namespace WebApi.Extensions
                         Name = "MIT",
                         Url = new Uri("https://opensource.org/licenses/MIT")
                     }
+                });
+
+                // 2. Specific Docs
+                variable.SwaggerDoc("Auth", new OpenApiInfo { Title = "Auth API", Version = "v1" });
+                variable.SwaggerDoc("users", new OpenApiInfo { Title = "Users API", Version = "v1" });
+                variable.SwaggerDoc("cocheras", new OpenApiInfo { Title = "Cocheras API", Version = "v1" });
+                variable.SwaggerDoc("lugares", new OpenApiInfo { Title = "Lugares API", Version = "v1" });
+                variable.SwaggerDoc("tickets", new OpenApiInfo { Title = "Tickets API", Version = "v1" });
+
+                // 3. Inclusion Logic
+                variable.DocInclusionPredicate((docName, apiDesc) =>
+                {
+                    if (docName == "v1") return true; // Show all in v1
+                    if (string.IsNullOrEmpty(apiDesc.GroupName)) return false;
+                    return apiDesc.GroupName == docName;
                 });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

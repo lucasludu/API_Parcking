@@ -9,6 +9,7 @@ using Models.Request._ticket;
 namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "tickets")]
     public class TicketController : BaseApiController
     {
         private readonly IApplicationDbContext _context;

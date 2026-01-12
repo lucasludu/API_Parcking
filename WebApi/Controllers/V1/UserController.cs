@@ -11,6 +11,7 @@ using System.Security.Claims;
 namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "users")]
     public class UserController : BaseApiController
     {
 

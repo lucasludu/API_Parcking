@@ -7,6 +7,7 @@ using Models.Request._cochera;
 namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "cocheras")]
     //[Authorize]
     public class CocheraController : BaseApiController
     {

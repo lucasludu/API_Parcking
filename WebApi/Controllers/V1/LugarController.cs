@@ -9,6 +9,7 @@ using Models.Response._lugar;
 namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "lugares")]
     public class LugarController : BaseApiController
     {
         private readonly IApplicationDbContext _context;

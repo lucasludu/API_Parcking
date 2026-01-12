@@ -32,6 +32,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(variable =>
     {
+        variable.SwaggerEndpoint("/swagger/v1/swagger.json", "API Completa");
+        variable.SwaggerEndpoint("/swagger/v1/auth/swagger.json", "Auth");
+        variable.SwaggerEndpoint("/swagger/v1/users/swagger.json", "Users");
+        variable.SwaggerEndpoint("/swagger/v1/cocheras/swagger.json", "Cocheras");
+        variable.SwaggerEndpoint("/swagger/v1/lugares/swagger.json", "Lugares");
+        variable.SwaggerEndpoint("/swagger/v1/tickets/swagger.json", "Tickets");
+
         variable.DefaultModelsExpandDepth(-1);
     });
 }

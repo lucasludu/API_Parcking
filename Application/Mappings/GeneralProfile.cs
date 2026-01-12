@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Entities;
+using Models.Response._cochera;
 using Models.Response._user;
 
 namespace Application.Mappings
@@ -9,6 +10,8 @@ namespace Application.Mappings
         public GeneralProfile()
         {
             CreateMap<ApplicationUser, UserResponse>();
+
+            CreateMap<Cochera, CocheraResponse>();
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Domain.Entities
         
         // Navigation Properties
         public ICollection<Tarifa> Tarifas { get; set; }
+        public ICollection<Lugar> Lugares { get; set; }
         public ICollection<Ticket> Tickets { get; set; }
         public ICollection<ApplicationUser> Empleados { get; set; }
     }

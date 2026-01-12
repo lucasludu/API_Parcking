@@ -21,6 +21,7 @@ namespace Persistence.Contexts
         }
 
         public DbSet<Cochera> Cocheras { get; set; }
+        public DbSet<Lugar> Lugares { get; set; }
         public DbSet<Tarifa> Tarifas { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
 

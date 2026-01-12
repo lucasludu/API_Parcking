@@ -8,6 +8,9 @@ namespace Domain.Entities
     {
         public Guid CocheraId { get; set; }
         public Cochera Cochera { get; set; }
+
+        public Guid? LugarId { get; set; }
+        public Lugar Lugar { get; set; }
         
         public string Patente { get; set; }
         public DateTime FechaIngreso { get; set; }

@@ -32,12 +32,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(variable =>
     {
+        // Esta SÍ lleva v1 porque el documento se llama "v1"
         variable.SwaggerEndpoint("/swagger/v1/swagger.json", "API Completa");
-        variable.SwaggerEndpoint("/swagger/v1/auth/swagger.json", "Auth");
-        variable.SwaggerEndpoint("/swagger/v1/users/swagger.json", "Users");
-        variable.SwaggerEndpoint("/swagger/v1/cocheras/swagger.json", "Cocheras");
-        variable.SwaggerEndpoint("/swagger/v1/lugares/swagger.json", "Lugares");
-        variable.SwaggerEndpoint("/swagger/v1/tickets/swagger.json", "Tickets");
+
+        // CORRECCIÓN: Quitamos el "/v1/" de todas estas rutas:
+        variable.SwaggerEndpoint("/swagger/authentication/swagger.json", "Authentication");
+        variable.SwaggerEndpoint("/swagger/users/swagger.json", "Users");
+        variable.SwaggerEndpoint("/swagger/cocheras/swagger.json", "Cocheras");
+        variable.SwaggerEndpoint("/swagger/lugares/swagger.json", "Lugares");
+        variable.SwaggerEndpoint("/swagger/tickets/swagger.json", "Tickets");
 
         variable.DefaultModelsExpandDepth(-1);
     });

@@ -10,7 +10,7 @@ using Models.Request._user;
 namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
-    [ApiExplorerSettings(GroupName = "Auth")]
+    [ApiExplorerSettings(GroupName = "authentication")]
     public class AuthController : BaseApiController
     {
         /// <summary>

@@ -29,7 +29,7 @@ namespace WebApi.Extensions
                 });
 
                 // 2. Specific Docs
-                variable.SwaggerDoc("Auth", new OpenApiInfo { Title = "Auth API", Version = "v1" });
+                variable.SwaggerDoc("authentication", new OpenApiInfo { Title = "Authentication API", Version = "v1" });
                 variable.SwaggerDoc("users", new OpenApiInfo { Title = "Users API", Version = "v1" });
                 variable.SwaggerDoc("cocheras", new OpenApiInfo { Title = "Cocheras API", Version = "v1" });
                 variable.SwaggerDoc("lugares", new OpenApiInfo { Title = "Lugares API", Version = "v1" });

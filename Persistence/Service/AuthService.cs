@@ -149,6 +149,11 @@ namespace Persistence.Service
             $"Usuario {user.UserName} logueado correctamente.");
         }
 
+        /// <summary>
+        /// Refresh JWT token using a valid refresh token.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<Response<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
         {
             var principal = GetPrincipalFromExpiredToken(request.Token);
@@ -354,11 +359,10 @@ namespace Persistence.Service
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
-
-
-
-        // 1. Método Auxiliar para Generar Refresh Token (Ponlo al final de la clase)
+        /// <summary>
+        /// Generate a secure refresh token.
+        /// </summary>
+        /// <returns></returns>
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -367,7 +371,12 @@ namespace Persistence.Service
             return Convert.ToBase64String(randomNumber);
         }
 
-        // 2. Método Auxiliar para obtener Claims de un Token Expirado (Ponlo al final)
+        /// <summary>
+        /// Retrieve principal from expired token.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="SecurityTokenException"></exception>
         private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters
@@ -387,8 +396,6 @@ namespace Persistence.Service
 
             return principal;
         }
-
-
 
         #endregion
 

@@ -44,6 +44,11 @@ if (app.Environment.IsDevelopment())
 
         variable.DefaultModelsExpandDepth(-1);
     });
+    app.UseReDoc(options =>
+    {
+        options.DocumentTitle = "Parking API Docs";
+        options.SpecUrl = "/swagger/v1/swagger.json";
+    });
 }
 app.UseHttpsRedirection();
 

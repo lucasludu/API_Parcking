@@ -12,6 +12,7 @@ namespace Application.Interfaces
         Task<Response<string>> ConfirmEmailAsync(string userId, string token);
         Task<Response<string>> ForgotPasswordAsync(ForgotPasswordRequest request);
         Task<Response<string>> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<Response<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request);
 
     }
 }

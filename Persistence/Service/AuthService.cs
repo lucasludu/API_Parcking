@@ -12,6 +12,7 @@ using Models.Response._user;
 using Persistence.Contexts;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Persistence.Service
@@ -126,18 +127,59 @@ namespace Persistence.Service
                 return Response<LoginResponse>.Fail("El correo electrónico no ha sido confirmado.");
 
             var roles = await _userManager.GetRolesAsync(user!);
-            var rol = roles.FirstOrDefault();
 
             var token = await GenerateJwtTokenAsync(user);
+
+            var jwtToken = await GenerateJwtTokenAsync(user); // Tu método que crea el JWT
+            var refreshToken = GenerateRefreshToken();
+
+            // Guardamos el Refresh Token en la BD
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Duración de 7 días (ajustable)
+            await _userManager.UpdateAsync(user);
 
             return new Response<LoginResponse>(
             new LoginResponse
             {
                 Token = token,
                 UserId = user.Id,
-                Roles = roles.ToList()
+                Roles = roles.ToList(),
+                RefreshToken = refreshToken
             },
             $"Usuario {user.UserName} logueado correctamente.");
+        }
+
+        public async Task<Response<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            var principal = GetPrincipalFromExpiredToken(request.Token);
+            var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value; // O usa NameIdentifier para ID
+
+            if (email == null) return Response<LoginResponse>.Fail("Token inválido.");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return Response<LoginResponse>.Fail("Token de refresco inválido o expirado. Por favor inicie sesión nuevamente.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user!);
+
+            // Si todo está bien, generamos NUEVOS tokens (Rotación de tokens)
+            var newJwtToken = await GenerateJwtTokenAsync(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Renovamos 7 días más
+            await _userManager.UpdateAsync(user);
+
+            return new Response<LoginResponse>(new LoginResponse
+            {
+                Token = user.RefreshToken,
+                UserId = user.Id,
+                Roles = roles.ToList(),
+                RefreshToken = newRefreshToken
+            }, "Token refrescado exitosamente");
         }
 
         /// <summary>
@@ -311,6 +353,42 @@ namespace Persistence.Service
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+
+
+
+        // 1. Método Auxiliar para Generar Refresh Token (Ponlo al final de la clase)
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        // 2. Método Auxiliar para obtener Claims de un Token Expirado (Ponlo al final)
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]!)),
+                ValidateLifetime = false // Importante: Ignoramos la expiración aquí
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+
+            return principal;
+        }
+
+
 
         #endregion
 

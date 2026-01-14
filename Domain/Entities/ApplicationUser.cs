@@ -6,5 +6,8 @@ namespace Domain.Entities
     {
         public Guid? CocheraId { get; set; }
         public Cochera Cochera { get; set; }
+
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiryTime { get; set; }
     }
 }

@@ -13,19 +13,9 @@ namespace WebApi.Extensions
                 variable.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "API Completa",
-                    Description = "Sistema Universitario",
+                    Description = "Sistema de Estacionamiento",
                     Version = "v1",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "LucasLudu",
-                        Email = "lucas@gmail.com",
-                        Url = new Uri("https://www.google.com.ar/")
-                    },
-                    License = new OpenApiLicense
-                    {
-                        Name = "MIT",
-                        Url = new Uri("https://opensource.org/licenses/MIT")
-                    }
+                    TermsOfService = new Uri("https://localhost:7042/api-docs/index.html")
                 });
 
                 // 2. Specific Docs

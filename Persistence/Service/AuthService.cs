@@ -98,7 +98,9 @@ namespace Persistence.Service
 
             // Construir URL (Apunta a tu Frontend o a un endpoint de prueba)
             // Nota: El frontend debe tener una pantalla que capture el token de la URL y muestre el formulario de nueva contraseña.
-            var url = $"https://localhost:7042/api/v1/Auth/reset-password?email={request.Email}&token={encodedToken}"; // O URL del Frontend
+            //var url = $"https://localhost:7042/api/v1/Auth/reset-password?email={request.Email}&token={encodedToken}"; // O URL del Frontend
+            var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
+            var url = $"{baseUrl}/reset-password?email={request.Email}&token={encodedToken}";
 
             // Enviar Correo
             await _emailService.SendEmailAsync(request.Email, "Restablecer Contraseña",
@@ -127,10 +129,8 @@ namespace Persistence.Service
                 return Response<LoginResponse>.Fail("El correo electrónico no ha sido confirmado.");
 
             var roles = await _userManager.GetRolesAsync(user!);
-
             var token = await GenerateJwtTokenAsync(user);
 
-            var jwtToken = await GenerateJwtTokenAsync(user); // Tu método que crea el JWT
             var refreshToken = GenerateRefreshToken();
 
             // Guardamos el Refresh Token en la BD
@@ -164,9 +164,7 @@ namespace Persistence.Service
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            {
                 return Response<LoginResponse>.Fail("Token de refresco inválido o expirado. Por favor inicie sesión nuevamente.");
-            }
 
             var roles = await _userManager.GetRolesAsync(user!);
 
@@ -275,7 +273,9 @@ namespace Persistence.Service
                 var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
 
                 // Construimos la URL (ajusta localhost al puerto de tu API)
-                var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
+                var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
 
                 // Enviamos el correo (Mock o Real)
                 await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",

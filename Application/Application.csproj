@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <Folder Include="Features\_auth\Queries\" />
-    <Folder Include="Specification\" />
+    <Folder Include="Features\_ticket\Queries\" />
   </ItemGroup>
 
 </Project>

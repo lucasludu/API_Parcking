@@ -13,6 +13,7 @@ namespace Shared
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<IEmailService, EmailService>();
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+            services.AddTransient<ICurrentUserService, CurrentUserService>();
         }
     }
 }

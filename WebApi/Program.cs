@@ -1,7 +1,10 @@
 ﻿using Application;
+using Application.Interfaces;
 using Persistence;
 using Shared;
+using WebApi;
 using WebApi.Extensions;
+using WebApi.Hubs;
 using WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,8 @@ builder.Services.AddSharedInfraestructure(builder.Configuration);
 builder.Services.AddApiVersioningExtension();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotifier, SignalRNotifier>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
@@ -66,6 +71,9 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseCors("AllowClient");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ParkingHub>("/hubs/parking"); // <--- ESTA ES LA URL QUE USARÁ EL FRONTEND
+
 app.MapControllers();
 
 app.Run();

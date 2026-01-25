@@ -1,6 +1,5 @@
 using Domain.Common;
 using Domain.Enums;
-using System;
 
 namespace Domain.Entities
 {
@@ -13,6 +12,7 @@ namespace Domain.Entities
         public Lugar Lugar { get; set; }
         
         public string Patente { get; set; }
+        public TipoVehiculo TipoVehiculo { get; set; } // <--- AGREGA ESTO
         public DateTime FechaIngreso { get; set; }
         public DateTime? FechaSalida { get; set; }
         public decimal? Total { get; set; }

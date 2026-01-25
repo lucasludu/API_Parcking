@@ -1,6 +1,7 @@
 ﻿using Application.Features._cochera.Commands.DeleteCocheraCommands;
 using Application.Features._cochera.Commands.UpdateCocheraCommands;
 using Application.Features._cochera.Queries.GetCocheraByIdQueries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._cochera;
 
@@ -8,7 +9,7 @@ namespace WebApi.Controllers.V1
 {
     [ApiVersion("1.0")]
     [ApiExplorerSettings(GroupName = "cocheras")]
-    //[Authorize]
+    [Authorize]
     public class CocheraController : BaseApiController
     {
         [HttpGet("{guid}")]

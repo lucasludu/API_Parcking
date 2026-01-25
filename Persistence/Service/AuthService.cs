@@ -141,7 +141,7 @@ namespace Persistence.Service
             return new Response<LoginResponse>(
             new LoginResponse
             {
-                Token = token,
+                JwToken = token,
                 UserId = user.Id,
                 Roles = roles.ToList(),
                 RefreshToken = refreshToken
@@ -180,7 +180,7 @@ namespace Persistence.Service
 
             return new Response<LoginResponse>(new LoginResponse
             {
-                Token = user.RefreshToken,
+                JwToken = newJwtToken,
                 UserId = user.Id,
                 Roles = roles.ToList(),
                 RefreshToken = newRefreshToken
@@ -352,7 +352,7 @@ namespace Persistence.Service
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(1),
                 signingCredentials: creds
             );
 
@@ -384,7 +384,7 @@ namespace Persistence.Service
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]!)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)),
                 ValidateLifetime = false // Importante: Ignoramos la expiración aquí
             };
 

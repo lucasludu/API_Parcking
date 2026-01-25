@@ -1,6 +1,7 @@
 using Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -13,7 +14,10 @@ namespace Domain.Entities
         
         public bool IsActive { get; set; } = true; // Enabled/Disabled for maintenance etc.
         public bool Eliminado { get; set; } = false; // Soft delete if needed, though BaseEntity likely handles some
-        
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; } // For concurrency control
+
         // Navigation properties
         public ICollection<Ticket> Tickets { get; set; }
     }

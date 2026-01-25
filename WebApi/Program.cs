@@ -13,6 +13,16 @@ builder.Services.AddSharedInfraestructure(builder.Configuration);
 builder.Services.AddApiVersioningExtension();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy.WithOrigins("https://localhost:7200", "http://localhost:5275") // Frontend URL & Swagger fallback
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
@@ -53,6 +63,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseCors("AllowClient");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

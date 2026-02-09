@@ -4,6 +4,7 @@ using Application.Features._cochera.Queries.GetCocheraByIdQueries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._cochera;
+using System.Security.Claims;
 
 namespace WebApi.Controllers.V1
 {
@@ -12,10 +13,15 @@ namespace WebApi.Controllers.V1
     [Authorize]
     public class CocheraController : BaseApiController
     {
-        [HttpGet("{guid}")]
-        public async Task<IActionResult> GetById(Guid guid)
+        [HttpGet]
+        public async Task<IActionResult> GetById()
         {
-            var result = await Mediator.Send(new GetCocheraByIdQuery(guid));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Token inválido o sin identidad.");
+
+            var result = await Mediator.Send(new GetCocheraByIdQuery(userId));
             
             return result.Succeeded 
                 ? Ok(result) 

@@ -4,8 +4,9 @@ EXPOSE 8080
 EXPOSE 8081
 
 # Fix for SQL Server connection error 35 (OpenSSL 3 strictness)
-# Permite conectar a SQL Server que usen versiones de TLS/Cipher suites más antiguas
-RUN sed -i 's/DEFAULT@SECLEVEL=2/DEFAULT@SECLEVEL=1/g' /etc/ssl/openssl.cnf
+# Modificamos openssl.cnf para habilitar ciphers antiguos (SECLEVEL=1)
+RUN sed -i 's/\[openssl_init\]/[openssl_init]\nssl_conf = ssl_sect\n/' /etc/ssl/openssl.cnf && \
+    printf "\n[ssl_sect]\nsystem_default = system_default_sect\n\n[system_default_sect]\nCipherString = DEFAULT@SECLEVEL=1\n" >> /etc/ssl/openssl.cnf
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release

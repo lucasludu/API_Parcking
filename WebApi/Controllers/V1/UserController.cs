@@ -4,6 +4,7 @@ using Application.Features._user.Commands.UpdateUserCommands;
 using Application.Features._user.Queries.GetAllUsersQueries;
 using Application.Features._user.Queries.GetProfileQueries;
 using Application.Features._user.Queries.GetUserByIdQueries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._user;
 using System.Security.Claims;
@@ -34,7 +35,7 @@ namespace WebApi.Controllers.V1
         }
 
         [HttpGet("me")] // La ruta será: api/v1/User/me
-        //[Authorize]     // 🔒 OBLIGATORIO: Solo entra si envía Token válido
+        [Authorize]     // 🔒 OBLIGATORIO: Solo entra si envía Token válido
         public async Task<IActionResult> GetMyProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

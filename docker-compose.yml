@@ -13,3 +13,20 @@ services:
       - SmtpSettings__Password=${SmtpSettings__Password}
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server_db
+    user: root # Fix para error de permisos "Access denied" en volúmenes Docker Windows
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password_123! # Contraseña fuerte requerida por SQL Server
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql/data
+
+volumes:
+  sql_data:

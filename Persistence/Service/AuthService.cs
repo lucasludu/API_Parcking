@@ -198,100 +198,105 @@ namespace Persistence.Service
             if (existingUser != null)
                 return Response<ApplicationUser>.Fail("El correo electrónico ya está en uso.");
 
-            // 2. Iniciar Transacción
-            using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            // 2. Iniciar Transacción con Estrategia de Ejecución (Requerido por EnableRetryOnFailure)
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
 
-            try
+            return await strategy.ExecuteAsync(async () =>
             {
-                // A. Crear el Usuario
-                var user = new ApplicationUser
+                using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+                try
                 {
-                    UserName = request.UserName,
-                    Email = request.Email,
-                    // Todavía no asignamos CocheraId
-                };
-
-                var result = await _userManager.CreateAsync(user, request.Password!);
-                if (!result.Succeeded)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    return Response<ApplicationUser>.Fail(result.Errors.Select(r => r.Description).ToList());
-                }
-
-                // B. Determinar Rol y Lógica de Cochera
-                string rolAsignar = RolesConstants.Usuario; // Por defecto
-
-                // CASO 1: Es Dueño (Envió datos de nueva cochera)
-                if (!string.IsNullOrEmpty(request.NombreCochera))
-                {
-                    rolAsignar = RolesConstants.Admin; // O "Owner" si creas ese rol
-
-                    var nuevaCochera = new Cochera
+                    // A. Crear el Usuario
+                    var user = new ApplicationUser
                     {
-                        Nombre = request.NombreCochera,
-                        Direccion = request.DireccionCochera!,
-                        CapacidadTotal = request.CapacidadCochera ?? 0,
-                        OwnerId = user.Id, // Vinculamos al dueño
-                        ImagenUrl = "default_garage.png", // Valor por defecto
-                        Created = DateTime.UtcNow,
-                        IsActive = true
+                        UserName = request.UserName,
+                        Email = request.Email,
+                        // Todavía no asignamos CocheraId
                     };
 
-                    await _dbContext.Cocheras.AddAsync(nuevaCochera, cancellationToken);
-                    await _dbContext.SaveChangesAsync(cancellationToken); // Guardar para obtener el ID
-
-                    // Actualizar usuario con la nueva cochera
-                    user.CocheraId = nuevaCochera.Id;
-                    await _userManager.UpdateAsync(user);
-                }
-                // CASO 2: Es Empleado (Envió ID de cochera existente)
-                else if (request.CocheraIdExistente.HasValue)
-                {
-                    // Verificar que la cochera exista
-                    var cocheraExiste = await _dbContext.Cocheras.AnyAsync(c => c.Id == request.CocheraIdExistente.Value, cancellationToken);
-                    if (!cocheraExiste)
+                    var result = await _userManager.CreateAsync(user, request.Password!);
+                    if (!result.Succeeded)
                     {
                         await transaction.RollbackAsync(cancellationToken);
-                        return Response<ApplicationUser>.Fail("La cochera especificada no existe.");
+                        return Response<ApplicationUser>.Fail(result.Errors.Select(r => r.Description).ToList());
                     }
 
-                    user.CocheraId = request.CocheraIdExistente.Value;
-                    await _userManager.UpdateAsync(user);
-                }
+                    // B. Determinar Rol y Lógica de Cochera
+                    string rolAsignar = RolesConstants.Usuario; // Por defecto
 
-                // C. Asignar Rol
-                if (!await _roleManager.RoleExistsAsync(rolAsignar))
+                    // CASO 1: Es Dueño (Envió datos de nueva cochera)
+                    if (!string.IsNullOrEmpty(request.NombreCochera))
+                    {
+                        rolAsignar = RolesConstants.Admin; // O "Owner" si creas ese rol
+
+                        var nuevaCochera = new Cochera
+                        {
+                            Nombre = request.NombreCochera,
+                            Direccion = request.DireccionCochera!,
+                            CapacidadTotal = request.CapacidadCochera ?? 0,
+                            OwnerId = user.Id, // Vinculamos al dueño
+                            ImagenUrl = "default_garage.png", // Valor por defecto
+                            Created = DateTime.UtcNow,
+                            IsActive = true
+                        };
+
+                        await _dbContext.Cocheras.AddAsync(nuevaCochera, cancellationToken);
+                        await _dbContext.SaveChangesAsync(cancellationToken); // Guardar para obtener el ID
+
+                        // Actualizar usuario con la nueva cochera
+                        user.CocheraId = nuevaCochera.Id;
+                        await _userManager.UpdateAsync(user);
+                    }
+                    // CASO 2: Es Empleado (Envió ID de cochera existente)
+                    else if (request.CocheraIdExistente.HasValue)
+                    {
+                        // Verificar que la cochera exista
+                        var cocheraExiste = await _dbContext.Cocheras.AnyAsync(c => c.Id == request.CocheraIdExistente.Value, cancellationToken);
+                        if (!cocheraExiste)
+                        {
+                            await transaction.RollbackAsync(cancellationToken);
+                            return Response<ApplicationUser>.Fail("La cochera especificada no existe.");
+                        }
+
+                        user.CocheraId = request.CocheraIdExistente.Value;
+                        await _userManager.UpdateAsync(user);
+                    }
+
+                    // C. Asignar Rol
+                    if (!await _roleManager.RoleExistsAsync(rolAsignar))
+                    {
+                        await _roleManager.CreateAsync(new ApplicationRole { Name = rolAsignar });
+                    }
+                    await _userManager.AddToRoleAsync(user, rolAsignar);
+
+                    // D. Confirmación de Email
+                    // Generamos el token único de Identity
+                    var verificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    // Lo codificamos para que pueda viajar seguro en una URL
+                    var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
+
+                    // Construimos la URL (ajusta localhost al puerto de tu API)
+                    //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                    var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
+                    var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+                    // Enviamos el correo (Mock o Real)
+                    await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",
+                        $"<h1>Bienvenido {user.UserName}</h1><p>Confirma tu cuenta haciendo <a href='{url}'>clic aquí</a></p></br><h1>Mi Luna</h1>");
+
+                    // E. COMMIT FINAL
+                    // Si llegamos hasta aquí, todo salió bien. Guardamos los cambios definitivamente.
+                    await transaction.CommitAsync(cancellationToken);
+
+                    return Response<ApplicationUser>.Success(user, $"Usuario registrado exitosamente como {rolAsignar}. Revisa tu correo para activar la cuenta.");
+                }
+                catch (Exception ex)
                 {
-                    await _roleManager.CreateAsync(new ApplicationRole { Name = rolAsignar });
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Response<ApplicationUser>.Fail($"Error en el servidor: {ex.Message}");
                 }
-                await _userManager.AddToRoleAsync(user, rolAsignar);
-
-                // D. Confirmación de Email
-                // Generamos el token único de Identity
-                var verificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                // Lo codificamos para que pueda viajar seguro en una URL
-                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
-
-                // Construimos la URL (ajusta localhost al puerto de tu API)
-                //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
-                var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
-                var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
-
-                // Enviamos el correo (Mock o Real)
-                await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",
-                    $"<h1>Bienvenido {user.UserName}</h1><p>Confirma tu cuenta haciendo <a href='{url}'>clic aquí</a></p>");
-
-                // E. COMMIT FINAL
-                // Si llegamos hasta aquí, todo salió bien. Guardamos los cambios definitivamente.
-                await transaction.CommitAsync(cancellationToken);
-
-                return Response<ApplicationUser>.Success(user, $"Usuario registrado exitosamente como {rolAsignar}. Revisa tu correo para activar la cuenta.");
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return Response<ApplicationUser>.Fail($"Error en el servidor: {ex.Message}");
-            }
+            });
         }
 
         /// <summary>
@@ -352,7 +357,7 @@ namespace Persistence.Service
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:DurationInMinutes"] ?? "60")),
                 signingCredentials: creds
             );
 

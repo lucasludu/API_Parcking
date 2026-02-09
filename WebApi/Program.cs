@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Persistence;
 using Shared;
+using System.Threading.RateLimiting;
 using WebApi;
 using WebApi.Extensions;
 using WebApi.Hubs;
@@ -30,7 +31,37 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+builder.Services.AddRateLimiter(ops =>
+{
+    ops.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    ops.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100, // 100 peticiones
+                Window = TimeSpan.FromMinutes(1) // por minuto
+            }));
+});
+
 var app = builder.Build();
+
+// Aplicar migraciones automáticamente al iniciar (útil para Docker)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<Persistence.Contexts.ApplicationDbContext>();
+        Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(context.Database);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al migrar la base de datos.");
+    }
+}
 
 app.Use(async (context, next) =>
 {
@@ -41,6 +72,8 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

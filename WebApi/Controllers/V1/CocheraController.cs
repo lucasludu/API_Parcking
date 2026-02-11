@@ -13,7 +13,8 @@ namespace WebApi.Controllers.V1
     [Authorize]
     public class CocheraController : BaseApiController
     {
-        [HttpGet]
+        [HttpGet("me")]
+        [Authorize]
         public async Task<IActionResult> GetById()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

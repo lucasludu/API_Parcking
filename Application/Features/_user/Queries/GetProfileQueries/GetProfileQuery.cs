@@ -4,5 +4,5 @@ using Models.Response._user;
 
 namespace Application.Features._user.Queries.GetProfileQueries
 {
-    public record GetProfileQuery(string guid) : IRequest<Response<UserResponse>>;
+    public record GetProfileQuery() : IRequest<Response<UserResponse>>;
 }

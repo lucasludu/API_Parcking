@@ -38,12 +38,8 @@ namespace WebApi.Controllers.V1
         [Authorize]     // 🔒 OBLIGATORIO: Solo entra si envía Token válido
         public async Task<IActionResult> GetMyProfile()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Token inválido o sin identidad.");
-
-            var result = await Mediator.Send(new GetProfileQuery(userId));
+         
+            var result = await Mediator.Send(new GetProfileQuery());
 
             return result.Succeeded 
                 ? Ok(result) 

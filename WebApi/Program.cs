@@ -102,6 +102,14 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseCors("AllowClient");
+
+app.Use(async (context, next) =>
+{
+    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+    Console.WriteLine($"[DEBUG] Authorization Header: {authHeader ?? "NULL"}");
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

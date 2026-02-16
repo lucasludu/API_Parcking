@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 
 namespace WebApi.Extensions
 {
@@ -40,17 +41,24 @@ namespace WebApi.Extensions
                 variable.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
+                    Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Ingrese su token JWT aquí (sin la palabra 'Bearer')."
+                    Description = "Ingrese su token JWT aquí iniciando con 'Bearer ' (ej: Bearer eyJ...)."
                 });
 
-                variable.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+                variable.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                        new OpenApiSecuritySchemeReference("Bearer"),
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
                         new List<string>()
                     }
                 });

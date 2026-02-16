@@ -12,6 +12,9 @@ namespace WebApi.Extensions
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
                 options.Events = new JwtBearerEvents
                 {
                     OnAuthenticationFailed = context =>

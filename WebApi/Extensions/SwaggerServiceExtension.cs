@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 
 namespace WebApi.Extensions
 {
@@ -36,7 +37,11 @@ namespace WebApi.Extensions
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                variable.IncludeXmlComments(xmlPath);
+
+                if (File.Exists(xmlPath))
+                {
+                    variable.IncludeXmlComments(xmlPath);
+                }
 
                 variable.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -63,6 +68,8 @@ namespace WebApi.Extensions
                     }
                 });
             });
+
+            services.AddFluentValidationRulesToSwagger();
 
             return services;
         }

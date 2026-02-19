@@ -8,7 +8,8 @@ namespace Application.Features._ticket.Commands.CreateTicketCommands
         {
             RuleFor(x => x.Request.Patente)
                 .NotEmpty().WithMessage("La patente es obligatoria.")
-                .MaximumLength(10).WithMessage("La patente no puede tener más de 10 caracteres.");
+                .MaximumLength(10).WithMessage("La patente no puede tener más de 10 caracteres.")
+                .Matches(@"^[A-Z0-9]+$").WithMessage("La patente solo puede contener letras mayúsculas y números.");
 
             RuleFor(x => x.Request.CocheraId)
                 .NotEmpty().WithMessage("El ID de la cochera es obligatorio.");

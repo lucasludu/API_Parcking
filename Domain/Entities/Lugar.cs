@@ -12,7 +12,7 @@ namespace Domain.Entities
         public Guid CocheraId { get; set; }
         public Cochera Cochera { get; set; }
         
-        public bool IsActive { get; set; } = true; // Enabled/Disabled for maintenance etc.
+
         public bool Eliminado { get; set; } = false; // Soft delete if needed, though BaseEntity likely handles some
 
         [Timestamp]

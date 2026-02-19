@@ -19,6 +19,10 @@ namespace WebApi.Controllers.V1
             _context = context;
         }
 
+        /// <summary>
+        /// Crea un nuevo lugar de estacionamiento en una cochera.
+        /// </summary>
+        /// <param name="request">Datos del lugar (Identificador, CocheraId).</param>
         // POST: api/v1/Lugar
         [HttpPost]
         [Authorize]
@@ -37,6 +41,10 @@ namespace WebApi.Controllers.V1
             return Ok(lugar.Id);
         }
 
+        /// <summary>
+        /// Obtiene todos los lugares de una cochera específica con su estado actual (Ocupado/Disponible).
+        /// </summary>
+        /// <param name="cocheraId">ID de la cochera.</param>
         // GET: api/v1/Lugar/ByCochera/{cocheraId}
         [HttpGet("ByCochera/{cocheraId}")]
         [Authorize]

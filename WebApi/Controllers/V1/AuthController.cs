@@ -15,11 +15,10 @@ namespace WebApi.Controllers.V1
     public class AuthController : BaseApiController
     {
         /// <summary>
-        /// Confirm email of a user
+        /// Confirma la dirección de correo electrónico de un usuario.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="token">Token de confirmación.</param>
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
@@ -35,10 +34,9 @@ namespace WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Login a user
+        /// Inicia sesión y obtiene un Token JWT.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Credenciales de acceso (Email y Password).</param>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthLoginRequest request)
         {
@@ -50,10 +48,9 @@ namespace WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Register a user
+        /// Registra un nuevo usuario en el sistema.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Datos del usuario (Nombre, Email, Password, etc).</param>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
         {
@@ -65,10 +62,9 @@ namespace WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Forgot password
+        /// Solicita el restablecimiento de contraseña (olvidó su clave).
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Email del usuario.</param>
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
@@ -80,10 +76,9 @@ namespace WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Reset password
+        /// Restablece la contraseña usando un token.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Token y nueva contraseña.</param>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
@@ -95,10 +90,9 @@ namespace WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Refresh token
+        /// Refresca un Token JWT expirado.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Token expirado y Refresh Token.</param>
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {

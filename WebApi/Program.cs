@@ -75,29 +75,27 @@ app.Use(async (context, next) =>
 
 app.UseRateLimiter();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(variable =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(variable =>
-    {
-        // Esta SÍ lleva v1 porque el documento se llama "v1"
-        variable.SwaggerEndpoint("/swagger/v1/swagger.json", "API Completa");
+    // Esta SÍ lleva v1 porque el documento se llama "v1"
+    variable.SwaggerEndpoint("/swagger/v1/swagger.json", "API Completa");
 
-        // CORRECCIÓN: Quitamos el "/v1/" de todas estas rutas:
-        variable.SwaggerEndpoint("/swagger/authentication/swagger.json", "Authentication");
-        variable.SwaggerEndpoint("/swagger/users/swagger.json", "Users");
-        variable.SwaggerEndpoint("/swagger/cocheras/swagger.json", "Cocheras");
-        variable.SwaggerEndpoint("/swagger/lugares/swagger.json", "Lugares");
-        variable.SwaggerEndpoint("/swagger/tickets/swagger.json", "Tickets");
+    // CORRECCIÓN: Quitamos el "/v1/" de todas estas rutas:
+    variable.SwaggerEndpoint("/swagger/authentication/swagger.json", "Authentication");
+    variable.SwaggerEndpoint("/swagger/users/swagger.json", "Users");
+    variable.SwaggerEndpoint("/swagger/cocheras/swagger.json", "Cocheras");
+    variable.SwaggerEndpoint("/swagger/lugares/swagger.json", "Lugares");
+    variable.SwaggerEndpoint("/swagger/tickets/swagger.json", "Tickets");
 
-        variable.DefaultModelsExpandDepth(-1);
-    });
-    app.UseReDoc(options =>
-    {
-        options.DocumentTitle = "Parking API Docs";
-        options.SpecUrl = "/swagger/v1/swagger.json";
-    });
-}
+    variable.DefaultModelsExpandDepth(-1);
+});
+app.UseReDoc(options =>
+{
+    options.DocumentTitle = "Parking API Docs";
+    options.SpecUrl = "/swagger/v1/swagger.json";
+});
+
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();

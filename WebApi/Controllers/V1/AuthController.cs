@@ -5,6 +5,7 @@ using Application.Features._auth.Commands.RefreshTokenCommands;
 using Application.Features._auth.Commands.RegisterUserCommands;
 using Application.Features._auth.Commands.ResetPasswordCommands;
 using Application.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Request._user;
 
@@ -20,6 +21,7 @@ namespace WebApi.Controllers.V1
         /// <param name="userId">ID del usuario.</param>
         /// <param name="token">Token de confirmación.</param>
         [HttpGet("confirm-email")]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
         {
             // Validamos que vengan los datos

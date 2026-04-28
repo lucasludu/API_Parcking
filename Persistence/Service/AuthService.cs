@@ -62,6 +62,8 @@ namespace Persistence.Service
                 if (!result.Succeeded)
                     return Response<string>.Fail(result.Errors.Select(e => e.Description).ToList());
 
+                user.EmailConfirmed = true; // Aseguramos que el campo esté actualizado
+                await _userManager.UpdateAsync(user); // Guardamos el cambio
                 return Response<string>.Success(user.Id, "Email confirmado exitosamente.");
             }
             catch (FormatException)
@@ -277,9 +279,9 @@ namespace Persistence.Service
                     var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
 
                     // Construimos la URL (ajusta localhost al puerto de tu API)
-                    //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
                     var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:8080";
-                    var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                    //var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                    var url = $"{baseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
 
                     // Enviamos el correo (Mock o Real)
                     // 1. Obtienes la ruta base de donde está corriendo la app

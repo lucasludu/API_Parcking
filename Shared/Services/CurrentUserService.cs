@@ -14,7 +14,7 @@ namespace Shared.Services
         }
 
 
-        public string UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue("uid") ?? string.Empty;
+        public string UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
     }
 }

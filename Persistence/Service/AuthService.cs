@@ -1,4 +1,4 @@
-﻿using Application.Constants;
+using Application.Constants;
 using Application.Interfaces;
 using Application.Wrappers;
 using Domain.Entities;
@@ -62,6 +62,8 @@ namespace Persistence.Service
                 if (!result.Succeeded)
                     return Response<string>.Fail(result.Errors.Select(e => e.Description).ToList());
 
+                user.EmailConfirmed = true; // Aseguramos que el campo esté actualizado
+                await _userManager.UpdateAsync(user); // Guardamos el cambio
                 return Response<string>.Success(user.Id, "Email confirmado exitosamente.");
             }
             catch (FormatException)
@@ -277,14 +279,32 @@ namespace Persistence.Service
                     var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationToken));
 
                     // Construimos la URL (ajusta localhost al puerto de tu API)
-                    //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
-                    //var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
                     var baseUrl = _configuration["BaseFrontendUrl"] ?? "https://localhost:7042";
                     var url = $"{baseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
 
                     // Enviamos el correo (Mock o Real)
-                    await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",
-                        $"<h1>Bienvenido {user.UserName}</h1><p>Confirma tu cuenta haciendo <a href='{url}'>clic aquí</a></p></br><h1>Mi Luna</h1>");
+                    // 1. Obtienes la ruta base de donde está corriendo la app
+                    string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string templatePath = Path.Combine(baseDir, "Templates", "WelcomeTemplate.html");
+
+                    // 2. Lees el HTML (Validar que exista el archivo para evitar errores)
+                    string emailBody = "Bienvenido"; // Fallback por si falla la lectura
+                    if (File.Exists(templatePath))
+                    {
+                        emailBody = await File.ReadAllTextAsync(templatePath, cancellationToken);
+
+                        // 3. Reemplazas los marcadores
+                        emailBody = emailBody
+                            .Replace("{UserName}", user.UserName)
+                            .Replace("{ConfirmUrl}", url);
+                    }
+
+                    // 4. Envías el correo bonito
+                    await _emailService.SendEmailAsync(
+                        user.Email!,
+                        "¡Bienvenido a bordo! - Confirma tu cuenta",
+                        emailBody
+                    );
 
                     // E. COMMIT FINAL
                     // Si llegamos hasta aquí, todo salió bien. Guardamos los cambios definitivamente.

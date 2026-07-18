@@ -12,6 +12,11 @@ namespace WebApi.Controllers.V1
     [Authorize]
     public class CocheraController : BaseApiController
     {
+        /// <summary>
+        /// Obtiene la Cochera del usuario autenticado.
+        /// </summary>
+        /// <response code="200">Retorna la cochera encontrada.</response>
+        /// <response code="404">Si el usuario no tiene cochera asignada.</response>
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> GetById()
@@ -23,6 +28,11 @@ namespace WebApi.Controllers.V1
                 : NotFound(result);
         }
 
+        /// <summary>
+        /// Actualiza los datos de una Cochera específica.
+        /// </summary>
+        /// <param name="guid">Identificador único de la cochera.</param>
+        /// <param name="request">Datos a modificar.</param>
         [HttpPut("{guid}")]
         public async Task<IActionResult> Update(Guid guid, [FromBody] UpdateCocheraRequest request)
         {
@@ -31,6 +41,10 @@ namespace WebApi.Controllers.V1
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        /// <summary>
+        /// Elimina una Cochera del sistema.
+        /// </summary>
+        /// <param name="guid">Identificador único de la cochera a eliminar.</param>
         [HttpDelete("{guid}")]
         // [Authorize(Roles = "Admin")] // Opcional: Solo Admins pueden borrar
         public async Task<IActionResult> Delete(Guid guid)

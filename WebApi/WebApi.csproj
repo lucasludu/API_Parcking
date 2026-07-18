@@ -13,6 +13,7 @@
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.1" />
     <PackageReference Include="Humanizer" Version="3.0.1" />
     <PackageReference Include="MediatR" Version="11.0.0" />
+    <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
@@ -25,10 +26,16 @@
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Application\Application.csproj" />
-    <ProjectReference Include="..\Persistence\Persistence.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Templates\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Application\Application.csproj" />
+		<ProjectReference Include="..\Persistence\Persistence.csproj" />
+		<ProjectReference Include="..\Shared\Shared.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -16,8 +16,12 @@ namespace WebApi.Controllers.V1
     public class UserController : BaseApiController
     {
 
+        /// <summary>
+        /// Obtiene un usuario específico por su ID (GUID).
+        /// </summary>
+        /// <param name="guid">ID del usuario.</param>
         [HttpGet("get/{guid}")]
-        public async Task<IActionResult> GetUser([FromBody] string guid)
+        public async Task<IActionResult> GetUser(string guid)
         {
             var result = await Mediator.Send(new GetUserByIdQuery(guid));
             return result.Succeeded 
@@ -25,8 +29,12 @@ namespace WebApi.Controllers.V1
                 : NotFound(result);
         }
 
+        /// <summary>
+        /// Obtiene un listado paginado de usuarios.
+        /// </summary>
+        /// <param name="request">Parámetros de paginación y filtrado.</param>
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllUsers([FromBody] GetAllUsersParameters request)
+        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersParameters request)
         {
             var result = await Mediator.Send(new GetAllUsersQuery(request));
             return result.Succeeded
@@ -34,6 +42,9 @@ namespace WebApi.Controllers.V1
                 : NotFound(result);
         }
 
+        /// <summary>
+        /// Obtiene el perfil del usuario actualmente autenticado.
+        /// </summary>
         [HttpGet("me")] // La ruta será: api/v1/User/me
         [Authorize]     // 🔒 OBLIGATORIO: Solo entra si envía Token válido
         public async Task<IActionResult> GetMyProfile()
@@ -46,6 +57,11 @@ namespace WebApi.Controllers.V1
                 : NotFound(result);
         }
 
+        /// <summary>
+        /// Actualiza los datos de un usuario.
+        /// </summary>
+        /// <param name="guid">ID del usuario a actualizar.</param>
+        /// <param name="request">Datos nuevos.</param>
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateUser(string guid, [FromBody] UpdateUserRequest request)
         {
@@ -57,6 +73,10 @@ namespace WebApi.Controllers.V1
                 : BadRequest(result);
         }
 
+        /// <summary>
+        /// Activa o desactiva un usuario.
+        /// </summary>
+        /// <param name="guid">ID del usuario.</param>
         [HttpPatch("toggle-active/{guid}")]
         public async Task<IActionResult> ToggleUserActive(string guid)
         {
@@ -67,10 +87,14 @@ namespace WebApi.Controllers.V1
                 : BadRequest(result);
         }
 
+        /// <summary>
+        /// Elimina permanentemente un usuario.
+        /// </summary>
+        /// <param name="id">ID del usuario a eliminar.</param>
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteUser(string guid)
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            var result = await Mediator.Send(new DeleteUserCommand(guid));
+            var result = await Mediator.Send(new DeleteUserCommand(id));
 
             return result.Succeeded 
                 ? Ok(result) 

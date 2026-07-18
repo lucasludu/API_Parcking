@@ -13,8 +13,9 @@ namespace Application
         {
             services.AddAutoMapper(config => config.AddMaps(Assembly.GetExecutingAssembly())); // Registra automaticamente el mappeo
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -24,6 +24,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.UnitTests", "Application.UnitTests\Application.UnitTests.csproj", "{9E5D078B-3C69-4B29-9F8D-05145F2DCAA3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{FFC2239B-E241-4A26-B0E0-B378FA16989E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParkingApp.AppHost", "ParkingApp.AppHost\ParkingApp.AppHost.csproj", "{C3AA0237-8938-493C-B29D-8A8102F0C04C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParkingApp.ServiceDefaults", "ParkingApp.ServiceDefaults\ParkingApp.ServiceDefaults.csproj", "{02D96812-C665-44B4-8E3C-1BCF11B54219}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +123,30 @@ Global
 		{FFC2239B-E241-4A26-B0E0-B378FA16989E}.Release|x64.Build.0 = Release|Any CPU
 		{FFC2239B-E241-4A26-B0E0-B378FA16989E}.Release|x86.ActiveCfg = Release|Any CPU
 		{FFC2239B-E241-4A26-B0E0-B378FA16989E}.Release|x86.Build.0 = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|x64.Build.0 = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Debug|x86.Build.0 = Debug|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|x64.ActiveCfg = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|x64.Build.0 = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|x86.ActiveCfg = Release|Any CPU
+		{C3AA0237-8938-493C-B29D-8A8102F0C04C}.Release|x86.Build.0 = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|x64.Build.0 = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Debug|x86.Build.0 = Debug|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|x64.ActiveCfg = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|x64.Build.0 = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|x86.ActiveCfg = Release|Any CPU
+		{02D96812-C665-44B4-8E3C-1BCF11B54219}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

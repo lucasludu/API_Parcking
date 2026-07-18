@@ -10,6 +10,8 @@ using WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddApplicationLayer();
 builder.Services.AddPersistenceInfraestructure(builder.Configuration);
@@ -46,6 +48,8 @@ builder.Services.AddRateLimiter(ops =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Aplicar migraciones automáticamente al iniciar (útil para Docker)
 using (var scope = app.Services.CreateScope())

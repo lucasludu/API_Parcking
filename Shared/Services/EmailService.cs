@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shared.Settings;
@@ -43,6 +43,7 @@ namespace Shared.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error sending email to {To}", to);
                 throw; // Opcional: Relanzar error para que la API avise que falló
             }
         }

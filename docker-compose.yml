@@ -22,7 +22,7 @@ services:
     user: root # Fix para error de permisos "Access denied" en volúmenes Docker Windows
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=Password_123! # Contraseña fuerte requerida por SQL Server
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD} # Contraseña fuerte requerida por SQL Server, tomar de .env
     ports:
       - "1433:1433"
     volumes:

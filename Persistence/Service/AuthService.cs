@@ -278,8 +278,9 @@ namespace Persistence.Service
 
                     // Construimos la URL (ajusta localhost al puerto de tu API)
                     //var url = $"https://localhost:7042/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
-                    var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
-                    var url = $"{baseUrl}/api/v1/Auth/confirm-email?userId={user.Id}&token={encodedToken}";
+                    //var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7042";
+                    var baseUrl = _configuration["BaseFrontendUrl"] ?? "https://localhost:7042";
+                    var url = $"{baseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
 
                     // Enviamos el correo (Mock o Real)
                     await _emailService.SendEmailAsync(user.Email!, "Bienvenido a Parking API",

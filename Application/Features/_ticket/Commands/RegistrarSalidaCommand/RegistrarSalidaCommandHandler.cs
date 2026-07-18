@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Specification._tarifa;
 using Application.Wrappers;
 using Domain.Entities;
@@ -37,7 +37,7 @@ namespace Application.Features._ticket.Commands.RegistrarSalidaCommand
             var tarifa = await _tarifaRepository.FirstOrDefaultAsync(spec, cancellationToken);
             
             ticket.Total = CalcularTotal(ticket.FechaIngreso, ticket.FechaSalida.Value, tarifa);
-            await _tarifaRepository.UpdateAsync(tarifa!, cancellationToken);
+            await _ticketRepositoryAsync.UpdateAsync(ticket, cancellationToken);
 
             return Response<Guid>.Success(ticket.Id, $"Salida registrada. Total a cobrar: ${ticket.Total}");
         }

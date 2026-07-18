@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Wrappers;
 using AutoMapper;
 using Domain.Entities;
@@ -42,7 +42,7 @@ namespace Application.Features._cochera.Queries.GetCocheraByIdQueries
 
             // 4. Buscar la Cochera
             // Pasamos el Guid directo, SIN .ToString()
-            var cochera = await _repository.GetByIdAsync(user.CocheraId, cancellationToken);
+            var cochera = await _repository.GetByIdAsync(user.CocheraId.Value, cancellationToken);
 
             if (cochera == null)
                 return Response<CocheraResponse>.Fail("La cochera asignada no se encontró (¿fue eliminada?).");

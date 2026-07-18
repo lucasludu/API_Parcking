@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Domain.Common;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,14 +10,16 @@ namespace Persistence.Contexts
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>, IApplicationDbContext
     {
         private readonly IDateTimeService _dateTime;
+        private readonly ICurrentUserService _currentUserService;
 
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
-            IDateTimeService datetime)
+            IDateTimeService datetime,
+            ICurrentUserService currentUserService)
         : base(options)
         {
-            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             this._dateTime = datetime;
+            this._currentUserService = currentUserService;
         }
 
         public DbSet<Cochera> Cocheras { get; set; }
@@ -33,9 +35,11 @@ namespace Persistence.Contexts
                 {
                     case EntityState.Added:
                         entry.Entity.Created = _dateTime.NowUtc;
+                        entry.Entity.CreatedBy = _currentUserService.UserId;
                         break;
                     case EntityState.Modified:
                         entry.Entity.LastModified = _dateTime.NowUtc;
+                        entry.Entity.LastModifiedBy = _currentUserService.UserId;
                         break;
                 }
             }

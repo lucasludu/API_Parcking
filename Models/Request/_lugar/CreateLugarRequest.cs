@@ -1,8 +1,8 @@
-﻿namespace Models.Request._lugar
+namespace Models.Request._lugar
 {
     public class CreateLugarRequest
     {
-        public string Identificador { get; set; }
+        public string Identificador { get; set; } = string.Empty;
         public Guid CocheraId { get; set; }
     }
 }

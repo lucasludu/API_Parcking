@@ -1,10 +1,10 @@
-﻿namespace Models.Response._user
+namespace Models.Response._user
 {
     public class LoginResponse
     {
         public string? JwToken { get; set; }
         public string? UserId { get; set; }
         public List<string>? Roles { get; set; }
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = string.Empty;
     }
 }

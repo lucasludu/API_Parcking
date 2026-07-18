@@ -1,4 +1,4 @@
-﻿using Ardalis.Specification;
+using Ardalis.Specification;
 using Domain.Entities;
 using Domain.Enums;
 
@@ -9,7 +9,8 @@ namespace Application.Specification._tarifa
         public TarifaVigenteSpec(Guid cocheraId, TipoVehiculo tipoVehiculo)
         {
             Query
-                .Where(t => t.CocheraId == cocheraId && t.TipoVehiculo == tipoVehiculo);
+                .Where(t => t.CocheraId == cocheraId && t.TipoVehiculo == tipoVehiculo)
+                .AsNoTracking();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +6,6 @@ namespace Models.Request._user
 {
     public class ForgotPasswordRequest
     {
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Domain.Enums;
+using Domain.Enums;
 
 namespace Models.Request._ticket
 {
@@ -6,7 +6,7 @@ namespace Models.Request._ticket
     {
         public Guid CocheraId { get; set; }
         public Guid? LugarId { get; set; } // Optional, can be null if just tracking entry without spot
-        public string Patente { get; set; }
+        public string Patente { get; set; } = string.Empty;
         public TipoVehiculo TipoVehiculo { get; set; }
     }
 }
